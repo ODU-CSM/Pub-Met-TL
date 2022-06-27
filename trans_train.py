@@ -168,7 +168,7 @@ def get_metrics(output_name, loss_fn=None):
     elif _output_name[-1] == 'cat_var':
         metrics = [met.cat_acc]
     else:
-        raise ValueError('Invalid output name "%s"!' % output_name)T
+        raise ValueError('Invalid output name "%s"!' % output_name)
     return metrics
 
 
