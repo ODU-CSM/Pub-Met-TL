@@ -36,35 +36,6 @@ class CpgModel(Model):
         return concatenate(inputs, axis=2)
 
 
-class FcAvg(CpgModel):
-    """Fully-connected layer followed by global average layer.
-
-    .. code::
-
-        Parameters: 54,000
-        Specification: fc[512]_gap
-    """
-
-    def _replicate_model(self, input):
-        kernel_regularizer = kr.L1L2(l1=self.l1_decay, l2=self.l2_decay)
-        x = kl.Dense(512, kernel_initializer=self.init,
-                     kernel_regularizer=kernel_regularizer)(input)
-        x = kl.Activation('relu')(x)
-
-        return km.Model(input, x)
-
-    def __call__(self, inputs):
-        x = self._merge_inputs(inputs)
-
-        shape = getattr(x, '_keras_shape')
-        replicate_model = self._replicate_model(kl.Input(shape=shape[2:]))
-        x = kl.TimeDistributed(replicate_model)(x)
-        x = kl.GlobalAveragePooling1D()(x)
-        x = kl.Dropout(self.dropout)(x)
-
-        return self._build(inputs, x)
-
-
 class RnnL1(CpgModel):
     """Bidirectional GRU with one layer.
 
@@ -93,36 +64,6 @@ class RnnL1(CpgModel):
         shape = x.get_shape()
         replicate_model = self._replicate_model(kl.Input(shape=shape[2:]))
         x = kl.TimeDistributed(replicate_model)(x)
-
-        kernel_regularizer = kr.L1L2(l1=self.l1_decay, l2=self.l2_decay)
-        gru = kl.GRU(256, kernel_regularizer=kernel_regularizer)
-        x = kl.Bidirectional(gru)(x)
-        x = kl.Dropout(self.dropout)(x)
-
-        return self._build(inputs, x)
-
-
-class RnnL2(RnnL1):
-    """Bidirectional GRU with two layers.
-
-    .. code::
-
-        Parameters: 1,100,000
-        Specification: fc[256]_bgru[128]_bgru[256]_do
-    """
-
-    def __call__(self, inputs):
-        x = self._merge_inputs(inputs)
-
-#         shape = getattr(x, '_keras_shape')
-        shape = x.get_shape()
-        replicate_model = self._replicate_model(kl.Input(shape=shape[2:]))
-        x = kl.TimeDistributed(replicate_model)(x)
-
-        kernel_regularizer = kr.L1L2(l1=self.l1_decay, l2=self.l2_decay)
-        x = kl.Bidirectional(kl.GRU(128, kernel_regularizer=kernel_regularizer,
-                                    return_sequences=True),
-                             merge_mode='concat')(x)
 
         kernel_regularizer = kr.L1L2(l1=self.l1_decay, l2=self.l2_decay)
         gru = kl.GRU(256, kernel_regularizer=kernel_regularizer)
