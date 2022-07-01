@@ -55,13 +55,13 @@ import pandas as pd
 import six
 from six.moves import range
 
-from transfer import data as dat
-from transfer.data import annotations as an
-from transfer.data import stats
-from transfer.data import dna
-from transfer.data import fasta
-from transfer.data import feature_extractor as fext
-from transfer.utils import make_dir
+from mettl import data as dat
+from mettl.data import annotations as an
+from mettl.data import stats
+from mettl.data import dna
+from mettl.data import fasta
+from mettl.data import feature_extractor as fext
+from mettl.utils import make_dir
 
 
 def prepro_pos_table(pos_tables):
